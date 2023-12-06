@@ -1,0 +1,432 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
+
+public class KioskUI extends JFrame {
+    private CardLayout cardLayout;
+    private JPanel cardPanel;
+    private String selectedFontSize = "regular"; // default: regular, large: 3배 큰 글자 크기
+
+    private JButton[] menuButtons; // 메뉴 버튼 배열
+    private JButton[] additionalButtons; // 추가 버튼 배열
+
+    private JTextArea textArea; // 예시로 사용하는 JTextArea
+    private JLabel label; // 예시로 사용하는 JLabel
+    
+    private JButton pizzaButton;
+    private JButton chickenButton;
+    private JButton burgerButton;
+    private JButton drinkButton;
+
+    private JButton food1Button;
+    private JButton food2Button;
+    private JButton food3Button;
+
+    private JButton guideButton;
+    private JButton cartButton;
+    
+    private List<String> cartList; // List to hold items in the cart
+    
+    public KioskUI() {
+        setTitle("Kiosk");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(800, 600);
+
+        cardLayout = new CardLayout();
+        cardPanel = new JPanel(cardLayout);
+
+        JPanel startPanel = createStartPanel();
+        JPanel fontSizePanel = createFontSizePanel();
+        JPanel menuSelectionPanel = createMenuSelectionPanel();
+        JPanel paymentPanel = createPaymentPanel();
+
+        cardPanel.add(startPanel, "start");
+        cardPanel.add(fontSizePanel, "font");
+        cardPanel.add(menuSelectionPanel, "menu");
+        cardPanel.add(paymentPanel, "payment");
+
+        add(cardPanel);
+        setVisible(true);
+
+        // JTextArea 초기화
+        textArea = new JTextArea();
+        // JLabel 초기화
+        label = new JLabel("Example Label");
+        
+        food1Button = new JButton("음식 1");
+        food2Button = new JButton("음식 2");
+        food3Button = new JButton("음식 3");
+        guideButton = new JButton("도움말");
+        cartButton = new JButton("장바구니");
+        
+        additionalButtons = new JButton[]{food1Button, food2Button, food3Button, guideButton, cartButton};
+        cartList = new ArrayList<>(); // Initialize the cart list
+        
+        
+    }
+
+    private JPanel createStartPanel() {
+        JPanel panel = new JPanel(new GridBagLayout());
+        JButton touchButton = new JButton("화면을 터치하세요");
+        touchButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                cardLayout.show(cardPanel, "font");
+            }
+        });
+
+        panel.add(touchButton);
+        return panel;
+    }
+
+    private JPanel createFontSizePanel() {
+        JPanel panel = new JPanel(new GridBagLayout());
+        JButton defaultSizeButton = new JButton("기본 크기");
+        JButton largeSizeButton = new JButton("큰 글자");
+
+        // Font size adjustment for the Large Font button
+        Font largeFont = new Font("Malgun Gothic", Font.PLAIN, 30); // Adjust font size here
+        
+        defaultSizeButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                selectedFontSize = "regular";
+                setFontSize(selectedFontSize);
+                cardLayout.show(cardPanel, "menu");
+            }
+        });
+
+        largeSizeButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                selectedFontSize = "large";
+                setFontSize(selectedFontSize);
+                cardLayout.show(cardPanel, "menu");
+            }
+        });
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.insets = new Insets(10, 10, 10, 10); // 여백 조정
+
+        panel.add(defaultSizeButton, gbc);
+
+        gbc.gridy = 1;
+        panel.add(largeSizeButton, gbc);
+
+        // Apply the large font only to the "Large Font" button
+        largeSizeButton.setFont(largeFont);
+
+        return panel;
+    }
+
+
+    private void setFontSize(String size) {
+        float fontSize = (size.equals("large")) ? 30f : 15f; // large일 때는 30 크기로 설정, 기본은 12
+        Font font = new Font("Malgun Gothic", Font.PLAIN, (int) fontSize);
+
+        // textArea가 null이 아닌 경우에만 폰트 변경
+        if (textArea != null) {
+            textArea.setFont(font);
+        }
+
+        // label이 null이 아닌 경우에만 폰트 변경
+        if (label != null) {
+            label.setFont(font);
+        }
+
+        // 메뉴 버튼 폰트 변경
+        for (JButton button : menuButtons) {
+            if (button != null) {
+                button.setFont(font);
+            }
+        }
+
+        // 추가 버튼 폰트 변경
+        for (JButton button : additionalButtons) {
+            if (button != null) {
+                button.setFont(font);
+            }
+        }
+    }
+    private void createGuideWindow() {
+        // Create a JDialog for the guide window
+        JDialog guideDialog = new JDialog(this, "Kiosk Guide", Dialog.ModalityType.APPLICATION_MODAL);
+        guideDialog.setSize(800, 600);
+
+        // Content for the guide (you can modify this with your actual guide information)
+        JTextArea guideText = new JTextArea("키오스크 이용 가이드\n"
+        		+ "1. 상단의 카테고리를 눌러 원하는 종류의 음식을 볼 수 있습니다.\n"
+        		+ "2. 원하시는 음식 버튼을 누르고 담기를 누르면 장바구니에 추가됩니다.\n"
+        		+ "3. 원하시는 음식을 모두 선택했으면 장바구니 버튼을 눌러 메류를 확인합니다\n"
+        		+ "4. 메뉴가 맞다면 결제, 다시 담고 싶으면 초기화 버튼을 눌러 다시 담을 수 있습니다.");
+        guideText.setEditable(true); // Allow text editing
+
+        // Define font style and size
+        Font customFont = new Font("Malgun Gothic", Font.BOLD, 25); // Modify font type and size as desired
+
+        // Apply custom font to the JTextArea
+        guideText.setFont(customFont);
+
+        // Add the guide text to the dialog
+        guideDialog.add(new JScrollPane(guideText));
+
+        // Display the guide window
+        guideDialog.setVisible(true);
+    }
+    
+    private JPanel createMenuSelectionPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+
+        JPanel categoryPanel = new JPanel(new GridLayout(1, 4)); // 카테고리 패널
+        JButton pizzaButton = new JButton("피자");
+        JButton chickenButton = new JButton("치킨");
+        JButton burgerButton = new JButton("햄버거");
+        JButton drinkButton = new JButton("음료");
+
+        // 메뉴 버튼 배열에 버튼 추가
+        menuButtons = new JButton[]{pizzaButton, chickenButton, burgerButton, drinkButton};
+
+        categoryPanel.add(pizzaButton);
+        categoryPanel.add(chickenButton);
+        categoryPanel.add(burgerButton);
+        categoryPanel.add(drinkButton);
+
+        JPanel foodPanel = new JPanel(new GridLayout(3, 1)); // 음식 패널 (피자, 치킨, 햄버거, 음료)
+
+        // 추가 버튼 배열 초기화
+        additionalButtons = new JButton[]{food1Button, food2Button, food3Button, guideButton, cartButton};
+        
+        // 각 메뉴 버튼에 대한 ActionListener 추가
+        pizzaButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // 피자에 대한 예시 음식 3가지 표시
+                food1Button.setText("치즈 피자");
+                food2Button.setText("불고기 피자");
+                food3Button.setText("포테이토 피자");
+
+                foodPanel.removeAll();
+                foodPanel.add(food1Button);
+                foodPanel.add(food2Button);
+                foodPanel.add(food3Button);
+                foodPanel.revalidate();
+                foodPanel.repaint();
+                
+                String selectedFood = getSelectedFood();
+                if (selectedFood != null) {
+                    cartList.add(selectedFood);
+                    System.out.println("Added " + selectedFood + " to cart!");
+                }
+            }
+        });
+
+        chickenButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // 치킨에 대한 예시 음식 3가지 표시
+                food1Button.setText("후라이드 치킨");
+                food2Button.setText("양념 치킨");
+                food3Button.setText("매콤 치킨");
+
+                foodPanel.removeAll();
+                foodPanel.add(food1Button);
+                foodPanel.add(food2Button);
+                foodPanel.add(food3Button);
+                foodPanel.revalidate();
+                foodPanel.repaint();
+            }
+        });
+
+        burgerButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // 햄버거에 대한 예시 음식 3가지 표시
+                food1Button.setText("치즈버거");
+                food2Button.setText("치킨버거");
+                food3Button.setText("베이컨버거");
+
+                foodPanel.removeAll();
+                foodPanel.add(food1Button);
+                foodPanel.add(food2Button);
+                foodPanel.add(food3Button);
+                foodPanel.revalidate();
+                foodPanel.repaint();
+            }
+        });
+
+        drinkButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // 음료에 대한 예시 음식 3가지 표시
+                food1Button.setText("콜라");
+                food2Button.setText("사이다");
+                food3Button.setText("오렌지주스");
+
+                foodPanel.removeAll();
+                foodPanel.add(food1Button);
+                foodPanel.add(food2Button);
+                foodPanel.add(food3Button);
+                foodPanel.revalidate();
+                foodPanel.repaint();
+            }
+        });
+
+        JButton guideButton = new JButton("도움말");
+        JButton cartButton = new JButton("장바구니");
+        JButton addButton = new JButton("담기"); // Newly added button for adding items
+
+        JPanel bottomPanel = new JPanel(new BorderLayout());
+        bottomPanel.add(guideButton, BorderLayout.WEST);
+        bottomPanel.add(addButton, BorderLayout.CENTER);
+        bottomPanel.add(cartButton, BorderLayout.EAST);
+
+        panel.add(categoryPanel, BorderLayout.NORTH);
+        panel.add(foodPanel, BorderLayout.CENTER);
+        panel.add(bottomPanel, BorderLayout.SOUTH);
+
+        
+        guideButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                createGuideWindow(); // Call the method to create the guide window
+            }
+        });
+        addButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Logic to add selected food item to the cart list
+                String selectedFood = getSelectedFood(); // Implement your method to get the selected food
+                if (selectedFood != null) {
+                    // Assuming cartList is an ArrayList<String> to store food items in the cart
+                    cartList.add(selectedFood);
+                    // Print or perform any action you want after adding the item to the cart
+                    System.out.println("Added " + selectedFood + " to cart!");
+                }
+            }
+        });
+        cartButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Create a JFrame for the payment window
+                JFrame paymentFrame = new JFrame("Payment");
+
+                // Create a JTextArea to display the cart items
+                JTextArea cartItemsArea = new JTextArea();
+                cartItemsArea.setEditable(false); // Ensure it's not editable
+
+                // Append each item in the cart list to the JTextArea
+                for (String item : cartList) {
+                    cartItemsArea.append(item + "\n");
+                }
+
+                // Add the cartItemsArea to the paymentFrame
+                paymentFrame.add(new JScrollPane(cartItemsArea));
+
+                paymentFrame.setSize(300, 400); // Set the size as per your requirement
+                paymentFrame.setVisible(true); // Show the payment window
+            }
+        });
+        panel.add(categoryPanel, BorderLayout.NORTH);
+        panel.add(foodPanel, BorderLayout.CENTER);
+        panel.add(bottomPanel, BorderLayout.SOUTH);
+
+        pizzaButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // 피자에 해당하는 음식들을 보여줌
+                cardLayout.show(cardPanel, "menu");
+            }
+        });
+
+        // 각 버튼들의 ActionListener 구현은 필요한 기능으로 채워넣으셔야 합니다.
+
+        return panel;
+    }
+    private String getSelectedFood() {
+        // Add your implementation to get the selected food item
+        // For example, return the text of the selected food button
+        // Replace this with your actual logic
+        return food1Button.getText(); // Placeholder, modify this to get the actual selected food
+    }
+    private JPanel createCartPanel() {
+        JPanel cartPanel = new JPanel(new GridLayout(cartList.size(), 1));
+        for (String item : cartList) {
+            JLabel itemLabel = new JLabel(item);
+            cartPanel.add(itemLabel);
+        }
+        return cartPanel;
+    }
+    private JPanel createPaymentPanel() {
+        JPanel panel = new JPanel();
+        JButton paymentButton = new JButton("결제");
+        JButton resetButton = new JButton("초기화");
+
+        paymentButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Perform payment processing if required
+
+                // Clear the cart list
+                cartList.clear();
+
+                // Find the paymentFrame and close it
+                Container container = panel.getParent();
+                while (!(container instanceof JFrame)) {
+                    container = container.getParent();
+                }
+                JFrame paymentFrame = (JFrame) container;
+                paymentFrame.dispose();
+
+                // Transition to the startPanel (화면터치창)
+                cardLayout.show(cardPanel, "start");
+            }
+        });
+
+        resetButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Clear the cart list
+                cartList.clear();
+
+                // Find the paymentFrame and close it
+                Container container = panel.getParent();
+                while (!(container instanceof JFrame)) {
+                    container = container.getParent();
+                }
+                JFrame paymentFrame = (JFrame) container;
+                paymentFrame.dispose();
+
+                // Transition to the menuSelectionPanel (메뉴선택 창)
+                cardLayout.show(cardPanel, "menu");
+            }
+        });
+
+        resetButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // 초기화 동작 처리
+                // 초기화 시 메뉴 선택 화면으로 이동하도록 처리
+                cardLayout.show(cardPanel, "menu");
+            }
+        });
+
+
+        panel.add(paymentButton);
+        panel.add(resetButton);
+        return panel;
+    }
+   
+     
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                new KioskUI();
+            }
+        });
+    }
+}
